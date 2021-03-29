@@ -36,12 +36,10 @@ public class DadhboardController {
     @GetMapping
     private ResponseEntity<DashBoardDto> dashLancamentos(@RequestParam("inicio") @DateTimeFormat(pattern="yyyy-MM-dd")Date inicio, @RequestParam("fim") @DateTimeFormat(pattern="yyyy-MM-dd") Date fim, String login) {
 
-
         DashboardService dashboardService = new DashboardService();
+        
         DashBoardDto dashBoardDto = dashboardService.servico(inicio, fim, login, uRepository, aRepository, lRepository, pRepository);
 
-        
-        
         return ResponseEntity.ok().body(dashBoardDto);
     }
 

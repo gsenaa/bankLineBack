@@ -15,10 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 import bankline.dtos.PlanAccountDto;
 import bankline.form.PlanAccountForm;
 import bankline.model.PlanAccount;
-import bankline.model.PlanAccountType;
-import bankline.model.User;
 import bankline.repository.PlanAccountRepository;
 import bankline.repository.UserRepository;
+import bankline.service.PlanAccountService;
 
 @RestController
 @RequestMapping("/lancamento/plan-account")
@@ -31,31 +30,23 @@ public class PlanAccountController {
     private UserRepository userRepository;
 
     @PostMapping    
-    private ResponseEntity<PlanAccountForm> criarPlan(@Valid @RequestBody PlanAccountForm pAccountForm) {
-        User user = userRepository.findByLogin(pAccountForm.getLogin());
+    private ResponseEntity<String> criarPlan(@Valid @RequestBody PlanAccountForm pAccountForm) {
         
-        PlanAccountType tipo = PlanAccountType.CHARGE;
+        PlanAccountService service = new PlanAccountService();
 
-        switch (pAccountForm.getTipoMovimento()) {
-            case "R":
-                tipo = PlanAccountType.REVENUE;
-                break;
-        
-            case "T":
-                tipo = PlanAccountType.TRANSFER;
-                break;
+        PlanAccount plansList = service.planAccountPostService(pAccountForm, planAccountRepository, userRepository);
+
+        if(plansList == null) {
+            return ResponseEntity.badRequest().body("Tipo de movimento inválido");
         }
 
-        System.out.println(tipo);
-        
-        PlanAccount planAccount = new PlanAccount(pAccountForm, tipo, user);
-
-        planAccountRepository.save(planAccount);
-        return null;
+        planAccountRepository.save(plansList);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping
     private List<PlanAccountDto> getPlans(String login) {
+
         List<PlanAccount> planList = planAccountRepository.findAllByUserLogin(login);
  
         return PlanAccountDto.converter(planList);
